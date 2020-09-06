@@ -1,0 +1,135 @@
+<h1>Show movie</h1>
+<div class="container-fluid mt-1">
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="display-4 text-center">Fluid jumbotron</h1>
+            <% if current_user %>
+                <p class="text-center">
+                    Logged in as <%= current_user.email %>.
+                </p>
+                <p class="text-center">
+                	<%= link_to "Edit", edit_user_path(current_user), :class => "btn btn-info"  %>
+                    <%= link_to "Log Out", logout_path, :class => "btn btn-danger"  %>
+                </p>
+            <% else %>
+                <p class="text-center">
+                    <%= link_to "Sign Up", signup_path, :class => "btn btn-success" %> 
+                    <%= link_to "Log In", login_path, :class => "btn btn-info"  %>
+                </p>
+                <p class="lead text-center">
+            	    Authenticate to unveil functionalities such as search and rating         
+                </p>
+            <% end %>
+            
+        </div>
+    </div>
+  <div class="row">
+    <div class="col-lg-8 col-md-6 col-sm-12">
+    	<div class="card">
+    		<div class="card-body">
+    			<span class="d-inline-block btn">
+                    <i class="material-icons">trending_up</i>
+                </span>
+                <span class="d-inline-block">
+                	<h5 class="card-title">Trending in The Movie DB</h5>
+                </span>
+                <div class="card-text" id="trendinglist">
+                	<div class="row">
+                	
+                	<% @recommendations.each do |recommendation| %>
+                	<div class="col-lg-6">
+                	    <div class="card">
+                	    	<div class="card-body">
+                	    		<div class="card-title">
+                	    			<span class="d-inline-block btn">
+                                         <i class="material-icons"><%= recommendation["media_type"] == "tv" ? "tv" : recommendation["media_type"] == "movie" ? "movie" : "play" %></i>
+                                    </span>
+                	    			<span class="d-inline-block">
+                	    			 	<%= recommendation["title"] ? recommendation["title"] : recommendation["name"] %>
+                	    			</span>
+                	    		</div>
+                	    		<img src="https://image.tmdb.org/t/p/w500/<%= recommendation['backdrop_path'] %>" class="card" alt="..." style="max-width: 100%;">
+                	    		<div class="card-text">
+                	    			<p><i><%= recommendation["overview"][0..100] + "..." %></i></p>
+                                    <% if recommendation["media_type"] == "tv" %>
+                                    <%= link_to "Read more", series_path(id: recommendation["id"]), :class => 'btn btn-info' %>
+                                    <% else %>
+                	    			<%= link_to "Read more", movie_path(id: recommendation["id"]), :class => 'btn btn-info' %>
+                                    <% end %>
+                	    		</div>
+                	    	</div>
+                	    </div>
+                	     </div>
+                	<% end %>
+                   
+                    </div>
+                </div>
+    		</div>
+    	</div>
+    </div>
+    <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card">
+    		<div class="card-body">
+    			<span class="d-inline-block btn">
+                    <i class="material-icons">rate_review</i>
+                </span>
+                <span class="d-inline-block">
+                	<h5 class="card-title">Latest reviews</h5>
+                </span>
+                <p class="card-text">
+                	<% @ratings.map { |rating| %>
+                	<div class="card" style="margin-bottom: 20px;">
+                	    <div class="card-body">
+                	    	<div class="row">
+                	    		<div class="col-sm-12">
+                		        <h4 id="<%= rating['rateditem']%>" class="movieitem <%= rating['rateditem']%>"></h4>
+                		        </div>
+                		    </div>
+                		    <div class="row">
+                		    	<div class="col-sm-4">
+                		        <span class="d-inline-block">
+                                    <i class="material-icons">star</i>
+                                </span>
+                                <span class="d-inline-block">
+                	                <h5 class="card-title"><p><%= rating['rate'] %>.0</p></h5>
+                                </span>
+                                </div>
+                                <div class="col-sm-8">
+                		            <p><%= rating['body'] %></p>
+                		        </div>
+                		    </div>
+                		    <p>
+                		    	<i><%= rating['created_at'] %></i>
+                		    </p>
+                		</div>
+                    </div>
+                	<% }%>
+                
+                </p>
+    		</div>
+    	</div>
+    </div>
+  </div>
+</div>
+<hr>
+<p>"This product uses the TMDb API but is not endorsed or certified by TMDb."</p>
+<script>
+	$(document).ready(function() {
+		var api_url = "https://api.themoviedb.org/3/movie/"
+		var api_key = "74c85d204bc9670c9a981ff5198edee2"
+		console.log("document ready!!!")
+        $('.movieitem').each(function() {
+
+            console.log($(this).attr("id"));
+            $.ajax({
+                url: api_url + $(this).attr("id") + '?api_key=' + api_key,
+                dataType: 'json',
+                success: function(result){
+                	$('.'+ result.id).text(function(_, oldText){
+                        return result.original_title 
+                    });
+                }
+            });
+        });
+    });
+</script>
